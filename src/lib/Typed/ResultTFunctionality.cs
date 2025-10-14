@@ -1,6 +1,6 @@
 namespace Results;
 
-public static class ResultOfTFunctionality
+public static class ResultTFunctionality
 {
     public static Result<T> Peek<T>(this Result<T> res, Action<T>? onSuccess = null, Action<Exception>? onFail = null)
     {
@@ -19,7 +19,7 @@ public static class ResultOfTFunctionality
         => res.Success ? onSuccess(res.Value) : onFail(res.Exception);
 }
 
-public static class ResultOfTDeconstruction
+public static class ResultTDeconstruction
 {
     public static T ValueOr<T>(this Result<T> res, T @default) => res.Success ? res.Value : @default;
     public static T ValueOr<T>(this Result<T> res, Func<T> getter) => res.Success ? res.Value : getter();

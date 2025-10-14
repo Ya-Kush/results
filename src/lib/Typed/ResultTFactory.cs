@@ -12,7 +12,7 @@ public readonly partial record struct Result
     }
 }
 
-public static class ResultOfTX
+public static class ResultTX
 {
     public static Result<T> ToResult<T>(this T? value, Func<Exception>? onNull = null) => Result.New(value, onNull);
     public static Result<T> ToResult<T>(this Exception exception) => exception;

@@ -2,7 +2,7 @@
 
 namespace Test.Results;
 
-public class ResultOfTFunctionalityTest
+public class ResultTFunctionalityTest
 {
     [Fact] public void Bind()
     {
