@@ -14,6 +14,6 @@ public readonly partial record struct Result(Exception? Exception)
     public bool Success => _inited && _ex is null;
     public bool Failure => _ex is { } || _inited is false;
 
-    public static implicit operator Result(bool success) => success ? new() : new(new FailureResultException());
+    public static implicit operator Result(bool success) => new(success ? null : new FailureResultException());
     public static implicit operator Result(Exception exception) => new(exception);
 }

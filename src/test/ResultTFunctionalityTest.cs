@@ -4,6 +4,21 @@ namespace Test.Results;
 
 public class ResultTFunctionalityTest
 {
+    [Fact] public void Peek()
+    {
+        (int val, Exception ex) expected = (10, new Exception("fail"));
+        var success = Result.New(expected.val);
+        var fail = Result.Fail<int>(expected.ex);
+
+        (int val, Exception ex) actual = default;
+        var actualS = success.Peek(v => actual.val = v);
+        var actualF = fail.Peek(onFail: e => actual.ex = e);
+
+        Assert.Equal(expected, actual);
+        Assert.Equal(success, actualS);
+        Assert.Equal(fail, actualF);
+    }
+
     [Fact] public void Bind()
     {
         var res = Result.New(5);
@@ -31,6 +46,19 @@ public class ResultTFunctionalityTest
 
         Assert.True(a.Success);
         Assert.Equal(expected, a.Value);
+    }
+    [Fact] public void Bind_Result()
+    {
+        var success = Result.New(5);
+        var failure = Result.Fail<int>(new Exception("fail"));
+        static Result onSuccess(int _) => Result.Ok();
+
+        var s = success.Bind(onSuccess);
+        var f = failure.Bind(onSuccess, e => Result.Fail(new Exception ("wrapper", failure.Exception)));
+
+        Assert.True(s.Success);
+        Assert.True(f.Failure);
+        Assert.Equal(failure.Exception, f.Exception.InnerException);
     }
 
     [Fact] public void Map()
@@ -60,7 +88,20 @@ public class ResultTFunctionalityTest
         Assert.True(a.Success);
         Assert.Equal(expected, a.Value);
     }
+    [Fact] public void Map_Result()
+    {
+        var success = Result.New(5);
+        var failure = Result.Fail<int>(new Exception("fail"));
+        static void onSuccess(int _) { }
+        Exception? ex = null;
 
+        var s = success.Map(onSuccess);
+        var f = failure.Map(onSuccess, e => ex = e);
+
+        Assert.True(s.Success);
+        Assert.True(f.Success);
+        Assert.Equal(failure.Exception, ex);
+    }
 
     [Fact] public void Match()
     {
@@ -101,5 +142,58 @@ public class ResultTFunctionalityTest
         Assert.Equal(10, a);
         Assert.Equal(10, b);
         Assert.Equal(10, c);
+    }
+
+    [Fact] public void ToNullable()
+    {
+        var successClass = Result.New(nameof(Result));
+        var failureClass = Result.Fail<string>(new Exception("fail"));
+
+        var sc = successClass.ToNullable();
+        var fc = failureClass.ToNullable();
+
+        Assert.Equal(nameof(Result), sc);
+        Assert.Null(fc);
+    }
+    [Fact] public void ToNullable_Struct()
+    {
+        var success = Result.New(10);
+        var failure = Result.Fail<int>(new Exception("fail"));
+
+        var s = success.ToNullable();
+        var f = failure.ToNullable();
+
+        Assert.NotNull(s);
+        Assert.Null(f);
+        Assert.Equal(10, s.Value);
+    }
+
+    [Fact] public void Deconstruct()
+    {
+        (string s, Exception fe) expected = ("success", new Exception("fail"));
+        var sr = Result.New(expected.s);
+        var fr = Result.Fail<string>(expected.fe);
+
+        var (s, se) = sr;
+        var (f, fe) = fr;
+
+        Assert.Equal(expected.s, s);
+        Assert.Null(se);
+        Assert.Null(f);
+        Assert.Equal(expected.fe, fe);
+    }
+    [Fact] public void Deconstruct_Struct()
+    {
+        (int s, Exception fe) expected = (10, new Exception("fail"));
+        var sr = Result.New(expected.s);
+        var fr = Result.Fail<int>(expected.fe);
+
+        var (s, se) = sr;
+        var (f, fe) = fr;
+
+        Assert.Equal(expected.s, s);
+        Assert.Null(se);
+        Assert.Equal(default, f);
+        Assert.Equal(expected.fe, fe);
     }
 }

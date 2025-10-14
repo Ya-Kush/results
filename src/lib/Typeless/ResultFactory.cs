@@ -2,13 +2,13 @@ namespace Results;
 
 public readonly partial record struct Result
 {
-    public static Result Ok() => new();
+    public static Result Ok() => true;
     public static Result New(bool success, Func<Exception>? onFail = null) => success || onFail is null ? success : onFail();
     public static Result Fail(Exception fail) => fail;
 
     public static Result Try(Action action)
     {
-        try { action(); return new(); }
+        try { action(); return Ok(); }
         catch (Exception e) { return e; }
     }
     public static Result Try(Func<bool> action, Func<Exception>? onFail = null)

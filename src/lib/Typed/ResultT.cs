@@ -15,10 +15,12 @@ public readonly record struct Result<T>
     public bool Success => _ex is null && _val is { };
     public bool Failure => _ex is { };
 
-    Result(T? value, Exception? exception = null) => (_val, _ex)
-        = (value, exception) is (null, null) ? (default, new NullValueResultException())
-        : (value, exception) is (_, { }) ? (default, exception)
-        : (value, default(Exception));
+    Result(T? value, Exception? exception = null) => (_val, _ex) = (value, exception) switch
+    {
+        (null, null) => (value, new NullValueResultException()),
+        (_, { })     => (default, exception),
+        _            => (value, exception)
+    };
 
     public static implicit operator Result<T>(T? value) => new(value);
     public static implicit operator Result<T>(Exception exception) => new(default, exception);
