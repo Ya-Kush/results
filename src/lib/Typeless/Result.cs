@@ -2,18 +2,18 @@ using Results.Exceptions;
 
 namespace Results;
 
-public readonly partial record struct Result
+public readonly partial record struct Result(Exception? Exception)
 {
-    readonly internal Func<Exception>? _exceptor;
+    readonly static UninitializedResultException UninitedException = new();
+    readonly Exception? _ex = Exception;
+    readonly bool _inited = true;
 
-    public Exception Exception => Failure ? _exceptor!() : throw new SuccessfulException();
-    public bool Success => _exceptor is null;
-    public bool Failure => _exceptor is { };
+    public Exception Exception => _ex is { } ? _ex
+        : _inited is false ? UninitedException
+        : throw new SuccessfulResultException();
+    public bool Success => _inited && _ex is null;
+    public bool Failure => _ex is { } || _inited is false;
 
-    public Result() => _exceptor = () => new UninitailizedException();
-    Result(Func<Exception>? exceptor) => _exceptor = exceptor;
-
-    public static implicit operator Result(bool success) => new(success ? null : () => new FailureException());
-    public static implicit operator Result(Exception exception) => new(() => exception ?? new FailureException());
-    public static implicit operator Result(Func<Exception> exceptor) => new(exceptor);
+    public static implicit operator Result(bool success) => success ? new() : new(new FailureResultException());
+    public static implicit operator Result(Exception exception) => new(exception);
 }

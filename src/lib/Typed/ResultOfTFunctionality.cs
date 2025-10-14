@@ -10,10 +10,10 @@ public static class ResultOfTFunctionality
     }
 
     public static Result<R> Bind<T, R>(this Result<T> res, Func<T, Result<R>> onSuccess, Func<Exception, Result<R>>? onFail = null)
-        => res.Success ? onSuccess(res.Value) : (onFail?.Invoke(res.Exception) ?? res._exceptor!);
+        => res.Success ? onSuccess(res.Value) : (onFail?.Invoke(res.Exception) ?? res.Exception);
 
     public static Result<R> Map<T, R>(this Result<T> res, Func<T, R> onSuccess, Func<Exception, R>? onFail = null)
-        => res.Success ? onSuccess(res.Value) : (onFail is { } ? onFail(res.Exception) : res._exceptor!);
+        => res.Success ? onSuccess(res.Value) : (onFail is { } ? onFail(res.Exception) : res.Exception);
 
     public static R Match<T, R>(this Result<T> res, Func<T, R> onSuccess, Func<Exception, R> onFail)
         => res.Success ? onSuccess(res.Value) : onFail(res.Exception);

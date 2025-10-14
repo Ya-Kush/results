@@ -15,7 +15,7 @@ public class ResultOfTFunctionalityTest
     [Fact] public void Bind_Fail()
     {
         var exception = new Exception("fail");
-        var res = Result.Fail<int>(() => exception);
+        var res = Result.Fail<int>(exception);
         var a = res.Bind(i => Result.New(i * 2));
 
         Assert.True(a.Failure);
@@ -25,7 +25,7 @@ public class ResultOfTFunctionalityTest
     {
         var exception = new Exception("fail");
         var expected = 0;
-        var res = Result.Fail<int>(() => exception);
+        var res = Result.Fail<int>(exception);
 
         var a = res.Bind(i => Result.New(i * 2), e => Result.New(expected));
 
@@ -44,7 +44,7 @@ public class ResultOfTFunctionalityTest
     [Fact] public void Map_Fail()
     {
         var exception = new Exception("fail");
-        var res = Result.Fail<int>(() => exception);
+        var res = Result.Fail<int>(exception);
         var a = res.Map(i => i);
 
         Assert.True(a.Failure);
@@ -54,7 +54,7 @@ public class ResultOfTFunctionalityTest
     {
         var exception = new Exception("fail");
         var expected = 0;
-        var res = Result.Fail<int>(() => exception);
+        var res = Result.Fail<int>(exception);
         var a = res.Map(i => i, e => expected);
 
         Assert.True(a.Success);
@@ -73,7 +73,7 @@ public class ResultOfTFunctionalityTest
     [Fact] public void Match_OnFail()
     {
         var exception = new Exception("fail");
-        var res = Result.Fail<int>(() => exception);
+        var res = Result.Fail<int>(exception);
         var expected = 0;
         var a = res.Match(i => i * 2, e => expected);
 
@@ -93,7 +93,7 @@ public class ResultOfTFunctionalityTest
     }
     [Fact] public void ValueOr_Default()
     {
-        var res = Result.Fail<int>(() => new Exception("fail"));
+        var res = Result.Fail<int>(new Exception("fail"));
         var a = res.ValueOr(10);
         var b = res.ValueOr(() => 10);
         var c = res.ValueOr(e => 10);

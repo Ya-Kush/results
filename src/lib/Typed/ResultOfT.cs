@@ -4,22 +4,23 @@ namespace Results;
 
 public readonly record struct Result<T>
 {
-    readonly T? _value;
-    readonly internal Func<Exception>? _exceptor;
+    readonly static UninitializedResultException UninitedException = new();
+    readonly Exception? _ex;
+    readonly T? _val;
 
-    public T Value => Success ? _value! : throw Exception;
-    public Exception Exception => Failure ? _exceptor!() : throw new SuccessfulException();
-    public bool Success => _exceptor is null;
-    public bool Failure => _exceptor is { };
+    public T Value => Success ? _val! : throw Exception;
+    public Exception Exception => _ex is { } ? _ex
+        : _val is null ? UninitedException
+        : throw new SuccessfulResultException();
+    public bool Success => _ex is null && _val is { };
+    public bool Failure => _ex is { };
 
-    public Result() => _exceptor = () => new UninitailizedException();
-    Result(T? value, Func<Exception>? exceptor = null) => (_value, _exceptor)
-        = (value, exceptor) is (null, null) ? (default, () => new NullValueException())
-        : (value, exceptor) is (_, { }) ? (default, exceptor)
-        : (value, default(Func<Exception>));
+    Result(T? value, Exception? exception = null) => (_val, _ex)
+        = (value, exception) is (null, null) ? (default, new NullValueResultException())
+        : (value, exception) is (_, { }) ? (default, exception)
+        : (value, default(Exception));
 
     public static implicit operator Result<T>(T? value) => new(value);
-    public static implicit operator Result<T>(Exception exception) => new(default, () => exception);
-    public static implicit operator Result<T>(Func<Exception> exceptor) => new(default, exceptor);
-    public static implicit operator Result(Result<T> result) => result.Success ? true : result.Exception;
+    public static implicit operator Result<T>(Exception exception) => new(default, exception);
+    public static implicit operator Result(Result<T> result) => result.Success ? new() : new(result.Exception);
 }
