@@ -1,6 +1,4 @@
-﻿using Results;
-
-namespace Test.Results;
+﻿namespace Results.Test;
 
 public class ResultTFunctionalityTest
 {
