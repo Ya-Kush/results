@@ -1,6 +1,6 @@
 namespace Results;
 
-public readonly partial record struct Result
+public static partial class Result
 {
     public static Result<T> New<T>(T? value, Func<Exception>? onNull = null) => value is { } || onNull is null ? value : onNull();
     public static Result<T> Fail<T>(Exception exception) => exception;

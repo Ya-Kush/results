@@ -11,12 +11,12 @@ public static class ResultTFunctionality
 
     public static Result<R> Bind<T, R>(this Result<T> res, Func<T, Result<R>> onSuccess, Func<Exception, Result<R>>? onFail = null)
         => res.Success ? onSuccess(res.Value) : (onFail?.Invoke(res.Exception) ?? res.Exception);
-    public static Result Bind<T>(this Result<T> res, Func<T, Result> onSuccess, Func<Exception, Result>? onFail = null)
+    public static VoidResult Bind<T>(this Result<T> res, Func<T, VoidResult> onSuccess, Func<Exception, VoidResult>? onFail = null)
         => res.Success ? onSuccess(res.Value) : (onFail?.Invoke(res.Exception) ?? res.Exception);
 
     public static Result<R> Map<T, R>(this Result<T> res, Func<T, R> onSuccess, Func<Exception, R>? onFail = null)
         => res.Success ? onSuccess(res.Value) : (onFail is { } ? onFail(res.Exception) : res.Exception);
-    public static Result Map<T>(this Result<T> res, Action<T> onSuccess, Action<Exception>? onFail = null)
+    public static VoidResult Map<T>(this Result<T> res, Action<T> onSuccess, Action<Exception>? onFail = null)
     {
         if (res.Success) { onSuccess(res.Value); return Result.Ok(); }
         else if (onFail is { }) { onFail(res.Exception); return Result.Ok(); }
