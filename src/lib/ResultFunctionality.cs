@@ -1,44 +1,28 @@
 namespace Results;
 
-public static class ResultTFunctionality
+public static class ResultFunctionality
 {
-    public static Result<T> Peek<T>(this Result<T> res, Action<T>? onSuccess = null, Action<Exception>? onFail = null)
+    public static Result<E> Peek<E>(this Result<E> res, Action? onSuccess = null, Action<Exception>? onFail = null) where E : Exception
     {
-        if (res.Success) onSuccess?.Invoke(res.Value);
+        if (res.Success) onSuccess?.Invoke();
         else onFail?.Invoke(res.Exception);
         return res;
     }
 
-    public static Result<R> Bind<T, R>(this Result<T> res, Func<T, Result<R>> onSuccess, Func<Exception, Result<R>>? onFail = null)
-        => res.Success ? onSuccess(res.Value) : (onFail?.Invoke(res.Exception) ?? res.Exception);
-    public static VoidResult Bind<T>(this Result<T> res, Func<T, VoidResult> onSuccess, Func<Exception, VoidResult>? onFail = null)
-        => res.Success ? onSuccess(res.Value) : (onFail?.Invoke(res.Exception) ?? res.Exception);
+    public static Result<E> Bind<E>(this Result<E> res, Func<Result<E>> onSuccess, Func<Exception, Result<E>>? onFail = null) where E : Exception
+        => res.Success ? onSuccess() : (onFail?.Invoke(res.Exception) ?? res.Exception);
+    public static Result<R, E> Bind<R, E>(this Result<E> res, Func<Result<R, E>> onSuccess, Func<Exception, Result<R, E>>? onFail = null) where E : Exception
+        => res.Success ? onSuccess() : (onFail is { } ? onFail(res.Exception) : res.Exception);
 
-    public static Result<R> Map<T, R>(this Result<T> res, Func<T, R> onSuccess, Func<Exception, R>? onFail = null)
-        => res.Success ? onSuccess(res.Value) : (onFail is { } ? onFail(res.Exception) : res.Exception);
-    public static VoidResult Map<T>(this Result<T> res, Action<T> onSuccess, Action<Exception>? onFail = null)
+    public static Result<E> Map<E>(this Result<E> res, Action onSuccess, Action<Exception>? onFail = null) where E : Exception
     {
-        if (res.Success) { onSuccess(res.Value); return Result.Ok(); }
-        else if (onFail is { }) { onFail(res.Exception); return Result.Ok(); }
+        if (res.Success) { onSuccess(); return Result.Ok<E>(); }
+        else if (onFail is { }) { onFail(res.Exception); return Result.Ok<E>(); }
         return res.Exception;
     }
+    public static Result<R, E> Map<R, E>(this Result<E> res, Func<R> onSuccess, Func<Exception, R>? onFail = null) where E : Exception
+        => res.Success ? onSuccess() : (onFail is { } ? onFail(res.Exception) : res.Exception);
 
-    public static R Match<T, R>(this Result<T> res, Func<T, R> onSuccess, Func<Exception, R> onFail)
-        => res.Success ? onSuccess(res.Value) : onFail(res.Exception);
-}
-
-public static class ResultTDeconstruction
-{
-    public static T ValueOr<T>(this Result<T> res, T @default) => res.Success ? res.Value : @default;
-    public static T ValueOr<T>(this Result<T> res, Func<T> getter) => res.Success ? res.Value : getter();
-    public static T ValueOr<T>(this Result<T> res, Func<Exception, T> getter) => res.Success ? res.Value : getter(res.Exception);
-
-    public static T? ToNullable<T>(this Result<T> res) where T : class => res.Success ? res.Value : null;
-
-    public static void Deconstruct<T>(this Result<T> res, out T? value, out Exception? exception)
-        => (value, exception) = res.Success ? (res.Value, default(Exception)) : (default, res.Exception);
-}
-public static class ResultTStructDeconstruction
-{
-    public static T? ToNullable<T>(this Result<T> res) where T : struct => res.Success ? res.Value : null;
+    public static R Match<E, R>(this Result<E> res, Func<R> onSuccess, Func<Exception, R> onFail) where E : Exception
+        => res.Success ? onSuccess() : onFail(res.Exception);
 }

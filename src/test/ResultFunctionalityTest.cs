@@ -1,15 +1,15 @@
-﻿namespace Results.Test;
+namespace Results.Test;
 
 public class ResultFunctionalityTest
 {
     [Fact] public void Peek()
     {
-        (int val, Exception ex) expected = (10, new Exception("fail"));
-        var success = Result.New(expected.val);
-        var fail = Result.Fail<int>(expected.ex);
+        (int val, Exception ex) expected = (1, new("fail"));
+        var success = Result.Ok<Exception>();
+        var fail = Result.Fail(expected.ex);
 
         (int val, Exception ex) actual = default;
-        var actualS = success.Peek(v => actual.val = v);
+        var actualS = success.Peek(() => actual.val = expected.val);
         var actualF = fail.Peek(onFail: e => actual.ex = e);
 
         Assert.Equal(expected, actual);
@@ -19,179 +19,105 @@ public class ResultFunctionalityTest
 
     [Fact] public void Bind()
     {
-        var res = Result.New(5);
-        var a = res.Bind(i => Result.New(i * 2));
+        var res = Result.Ok<Exception>();
+        var invoked = false;
+        var a = res.Bind(() => { invoked = true; return Result.Ok<Exception>(); });
 
-        Assert.True(a.Success);
-        Assert.Equal(10, a.Value);
+        Assert.True(invoked);
     }
     [Fact] public void Bind_Fail()
     {
-        var exception = new Exception("fail");
-        var res = Result.Fail<int>(exception);
-        var a = res.Bind(i => Result.New(i * 2));
+        var res = Result.Fail<Exception>(new());
+        var invoked = false;
+        var a = res.Bind(() => { invoked = true; return Result.Ok<Exception>(); });
 
+        Assert.False(invoked);
         Assert.False(a.Success);
-        Assert.Equal(exception, a.Exception);
+        Assert.Equal(res, a);
     }
     [Fact] public void Bind_OnFail()
     {
-        var exception = new Exception("fail");
-        var expected = 0;
-        var res = Result.Fail<int>(exception);
+        var res = Result.Fail<Exception>(new());
+        var ex = new Exception("fail");
+        var a = res.Bind(Result.Ok<Exception>, _ => ex);
 
-        var a = res.Bind(i => Result.New(i * 2), e => Result.New(expected));
-
-        Assert.True(a.Success);
-        Assert.Equal(expected, a.Value);
+        Assert.False(a.Success);
+        Assert.Equal(ex, a.Exception);
     }
-    [Fact] public void Bind_Result()
+    [Fact] public void Bind_ResultT()
     {
-        var success = Result.New(5);
-        var failure = Result.Fail<int>(new Exception("fail"));
-        static VoidResult onSuccess(int _) => Result.Ok();
+        var ex = new Exception("fail");
+        var s = Result.Ok<Exception>();
+        var f = Result.Fail<Exception>(new());
+        Result<int, Exception> onFail(Exception e) => Result.Fail<int, Exception>(ex);
+        Result<int, Exception> onSuccess() => Result.Ok<int, Exception>(1);
 
-        var s = success.Bind(onSuccess);
-        var f = failure.Bind(onSuccess, e => Result.Fail(new Exception ("wrapper", failure.Exception)));
+        var st = s.Bind(onSuccess, onFail);
+        var ft = f.Bind(onSuccess, onFail);
 
-        Assert.True(s.Success);
-        Assert.False(f.Success);
-        Assert.Equal(failure.Exception, f.Exception.InnerException);
+        Assert.True(st.Success);
+        Assert.False(ft.Success);
+        Assert.Equal(1, st.Value);
+        Assert.Equal(ex, ft.Exception);
     }
 
     [Fact] public void Map()
     {
-        var res = Result.New(5);
-        var a = res.Map(i => i * 2);
+        var res = Result.Ok<Exception>();
+        var invoked = false;
+        var a = res.Map(() => invoked = true);
 
-        Assert.True(a.Success);
-        Assert.Equal(10, a.Value);
+        Assert.True(invoked);
     }
     [Fact] public void Map_Fail()
     {
-        var exception = new Exception("fail");
-        var res = Result.Fail<int>(exception);
-        var a = res.Map(i => i);
+        var res = Result.Fail<Exception>(new());
+        var invoked = false;
+        var a = res.Map(() => invoked = true);
 
+        Assert.False(invoked);
         Assert.False(a.Success);
-        Assert.Equal(exception, a.Exception);
+        Assert.Equal(res, a);
     }
     [Fact] public void Map_OnFail()
     {
-        var exception = new Exception("fail");
-        var expected = 0;
-        var res = Result.Fail<int>(exception);
-        var a = res.Map(i => i, e => expected);
+        var res = Result.Fail<Exception>(new());
+        var ex = new Exception("fail");
+        var exA = default(Exception);
+        var a = res.Map(() => { }, _ => { exA = ex; });
 
         Assert.True(a.Success);
-        Assert.Equal(expected, a.Value);
+        Assert.Equal(ex, exA);
     }
-    [Fact] public void Map_Result()
+    [Fact] public void Map_ResultT()
     {
-        var success = Result.New(5);
-        var failure = Result.Fail<int>(new Exception("fail"));
-        static void onSuccess(int _) { }
-        Exception? ex = null;
+        var ex = new Exception("fail");
+        var s = Result.Ok<Exception>();
+        var f = Result.Fail<Exception>(new());
+        int onFail(Exception e) => 0;
+        int onSuccess() => 1;
 
-        var s = success.Map(onSuccess);
-        var f = failure.Map(onSuccess, e => ex = e);
+        var st = s.Map(onSuccess, onFail);
+        var ft = f.Map(onSuccess, onFail);
 
-        Assert.True(s.Success);
-        Assert.True(f.Success);
-        Assert.Equal(failure.Exception, ex);
+        Assert.True(st.Success);
+        Assert.True(ft.Success);
+        Assert.Equal(1, st.Value);
+        Assert.Equal(0, ft.Value);
     }
 
     [Fact] public void Match()
     {
-        var res = Result.New(5);
-        var expected = 10;
-        var a = res.Match(i => i * 2, e => 0);
+        var res = Result.Ok<Exception>();
+        var a = res.Match(() => 1, _ => 0);
 
-        Assert.Equal(expected, a);
+        Assert.Equal(1, a);
     }
     [Fact] public void Match_OnFail()
     {
-        var exception = new Exception("fail");
-        var res = Result.Fail<int>(exception);
-        var expected = 0;
-        var a = res.Match(i => i * 2, e => expected);
+        var res = Result.Fail<Exception>(new());
+        var a = res.Match(() => 1, _ => 0);
 
-        Assert.Equal(expected, a);
-    }
-
-    [Fact] public void ValueOr()
-    {
-        var res = Result.New(5);
-        var a = res.ValueOr(10);
-        var b = res.ValueOr(() => 10);
-        var c = res.ValueOr(e => 10);
-
-        Assert.Equal(5, a);
-        Assert.Equal(5, b);
-        Assert.Equal(5, c);
-    }
-    [Fact] public void ValueOr_Default()
-    {
-        var res = Result.Fail<int>(new Exception("fail"));
-        var a = res.ValueOr(10);
-        var b = res.ValueOr(() => 10);
-        var c = res.ValueOr(e => 10);
-
-        Assert.Equal(10, a);
-        Assert.Equal(10, b);
-        Assert.Equal(10, c);
-    }
-
-    [Fact] public void ToNullable()
-    {
-        var successClass = Result.New(nameof(Result));
-        var failureClass = Result.Fail<string>(new Exception("fail"));
-
-        var sc = successClass.ToNullable();
-        var fc = failureClass.ToNullable();
-
-        Assert.Equal(nameof(Result), sc);
-        Assert.Null(fc);
-    }
-    [Fact] public void ToNullable_Struct()
-    {
-        var success = Result.New(10);
-        var failure = Result.Fail<int>(new Exception("fail"));
-
-        var s = success.ToNullable();
-        var f = failure.ToNullable();
-
-        Assert.NotNull(s);
-        Assert.Null(f);
-        Assert.Equal(10, s.Value);
-    }
-
-    [Fact] public void Deconstruct()
-    {
-        (string s, Exception fe) expected = ("success", new Exception("fail"));
-        var sr = Result.New(expected.s);
-        var fr = Result.Fail<string>(expected.fe);
-
-        var (s, se) = sr;
-        var (f, fe) = fr;
-
-        Assert.Equal(expected.s, s);
-        Assert.Null(se);
-        Assert.Null(f);
-        Assert.Equal(expected.fe, fe);
-    }
-    [Fact] public void Deconstruct_Struct()
-    {
-        (int s, Exception fe) expected = (10, new Exception("fail"));
-        var sr = Result.New(expected.s);
-        var fr = Result.Fail<int>(expected.fe);
-
-        var (s, se) = sr;
-        var (f, fe) = fr;
-
-        Assert.Equal(expected.s, s);
-        Assert.Null(se);
-        Assert.Equal(default, f);
-        Assert.Equal(expected.fe, fe);
+        Assert.Equal(0, a);
     }
 }

@@ -2,18 +2,24 @@ namespace Results;
 
 public static partial class Result
 {
-    public static Result<T> New<T>(T? value, Func<Exception>? onNull = null) => value is { } || onNull is null ? value : onNull();
-    public static Result<T> Fail<T>(Exception exception) => exception;
+    public static Result<E> Ok<E>() where E : Exception => default(E);
+    public static Result<E> New<E>(bool success, Func<E> onFalse) where E : Exception => success ? Ok<E>() : onFalse();
+    public static Result<E> Fail<E>(E fail) where E : Exception => fail;
 
-    public static Result<T> Try<T>(Func<T?> producer, Func<Exception>? onNull = null)
+    public static Result<E> Try<E>(Action action) where E : Exception
     {
-        try { return New(producer(), onNull); }
-        catch (Exception e) { return e; }
+        try { action(); return Ok<E>(); }
+        catch (E e) { return e; }
+    }
+    public static Result<E> Try<E>(Func<bool> action, Func<E> onFalse) where E : Exception
+    {
+        try { return New(action(), onFalse); }
+        catch (E e) { return e; }
     }
 }
 
-public static class ResultTX
+public static class ResultX
 {
-    public static Result<T> ToResult<T>(this T? value, Func<Exception>? onNull = null) => Result.New(value, onNull);
-    public static Result<T> ToResult<T>(this Exception exception) => exception;
+    public static Result<E> ToResult<E>(this bool success, Func<E> onFalse) where E : Exception => Result.New(success, onFalse);
+    public static Result<E> ToResult<E>(this E exception) where E : Exception => exception;
 }
