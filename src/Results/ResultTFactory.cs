@@ -15,6 +15,7 @@ public static partial class Result
 
 public static class ResultTX
 {
+    public static Result<T, E> ToResult<T, E>(this T value) where E : Exception => Result.Ok<T, E>(value);
     public static Result<T, E> ToResult<T, E>(this T? value, Func<E> onNull) where E : Exception => Result.New(value, onNull);
     public static Result<T, E> ToResult<T, E>(this E exception) where E : Exception => exception;
 }
