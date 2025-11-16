@@ -1,17 +1,17 @@
-namespace Results.Functionality;
+namespace Results;
 
 public static class ResultTFunctionality
 {
-    public static Result<T, E> Peek<T, E>(this Result<T, E> res, Action<T>? onSuccess = null, Action<Exception>? onFail = null) where E : Exception
+    public static Result<T, E> Peek<T, E>(this Result<T, E> res, Action<T>? onSuccess = null, Action<E>? onFail = null) where E : Exception
     {
         if (res.Success) onSuccess?.Invoke(res.Value);
         else onFail?.Invoke(res.Exception);
         return res;
     }
 
-    public static Result<R, E> Bind<T, E, R>(this Result<T, E> res, Func<T, Result<R, E>> onSuccess, Func<Exception, Result<R, E>>? onFail = null) where E : Exception
+    public static Result<R, E> Bind<T, E, R>(this Result<T, E> res, Func<T, Result<R, E>> onSuccess, Func<E, Result<R, E>>? onFail = null) where E : Exception
         => res.Success ? onSuccess(res.Value) : (onFail?.Invoke(res.Exception) ?? res.Exception);
-    public static Result<E> Bind<T, E>(this Result<T, E> res, Func<T, Result<E>> onSuccess, Func<Exception, Result<E>>? onFail = null) where E : Exception
+    public static Result<E> Bind<T, E>(this Result<T, E> res, Func<T, Result<E>> onSuccess, Func<E, Result<E>>? onFail = null) where E : Exception
         => res.Success ? onSuccess(res.Value) : (onFail?.Invoke(res.Exception) ?? res.Exception);
 
     public static Result<R, E> Map<T, E, R>(this Result<T, E> res, Func<T, R> onSuccess, Func<E, R>? onFail = null) where E : Exception
