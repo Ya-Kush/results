@@ -70,6 +70,6 @@ public class ResultTTest
     [Fact] public void ThrowException_ConvertedFromNull()
     {
         Assert.Throws<InvalidConditionResultException>(
-            () => (Result<string, Exception>)default(string));
+            () => (Result<string, Exception>)default(string)!);
     }
 }

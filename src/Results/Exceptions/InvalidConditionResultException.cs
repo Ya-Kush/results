@@ -1,3 +1,3 @@
 namespace Results.Exceptions;
 
-public class InvalidConditionResultException() : ResultException();
+public class InvalidConditionResultException : ResultException;

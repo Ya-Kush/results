@@ -1,4 +1,4 @@
-namespace Results;
+namespace Results.Functionality;
 
 public static class ResultTFunctionality
 {

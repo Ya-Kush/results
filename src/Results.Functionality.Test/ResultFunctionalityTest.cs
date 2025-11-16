@@ -1,4 +1,4 @@
-namespace Results.Test;
+namespace Results.Functionality.Test;
 
 public class ResultFunctionalityTest
 {
