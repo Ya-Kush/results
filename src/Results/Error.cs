@@ -1,3 +1,3 @@
 namespace Results;
 
-public class Error(string? msg = null) { public string? Message { get; } = msg; }
+public abstract class Error(string? msg = null) : ApplicationException(msg);

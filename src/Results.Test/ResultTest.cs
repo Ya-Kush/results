@@ -19,7 +19,7 @@ public class ResultTest
 
     [Fact] public void Failure_ConvertedFromException()
     {
-        var e = new Error();
+        var e = new TestError();
         Result<Error> r = e;
         Assert.False(r.Success);
         Assert.Equal(e, r.Error);

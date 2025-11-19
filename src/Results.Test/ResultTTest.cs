@@ -43,7 +43,7 @@ public class ResultTTest
 
     [Fact] public void Failure_ConvertedFromException()
     {
-        var e = new Error();
+        var e = new TestError();
         Result<int, Error> r = e;
         Assert.False(r.Success);
         Assert.Equal(e, r.Error);
@@ -51,14 +51,14 @@ public class ResultTTest
 
     [Fact] public void Failure_GetValue()
     {
-        Result<int, Error> r = new Error();
+        Result<int, Error> r = new TestError();
         Assert.False(r.Success);
         Assert.Throws<FailureResultException>(() => r.Value);
     }
 
     [Fact] public void Failure_ConvertToTypelessResult()
     {
-        var e = new Error();
+        var e = new TestError();
         Result<int, Error> tr = e;
         Result<Error> r = tr;
         Assert.False(r.Success);
