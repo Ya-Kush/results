@@ -4,11 +4,11 @@ public class ResultTFunctionalityTest
 {
     [Fact] public void Peek()
     {
-        (int val, Exception ex) expected = (10, new Exception("fail"));
-        var success = Result.Ok<int, Exception>(expected.val);
-        var fail = Result.Fail<int, Exception>(expected.ex);
+        (int val, Error ex) expected = (10, new Error("fail"));
+        var success = Result.Ok<int, Error>(expected.val);
+        var fail = Result.Fail<int, Error>(expected.ex);
 
-        (int val, Exception ex) actual = default;
+        (int val, Error ex) actual = default;
         var actualS = success.Peek(v => actual.val = v);
         var actualF = fail.Peek(onFail: e => actual.ex = e);
 
@@ -19,49 +19,50 @@ public class ResultTFunctionalityTest
 
     [Fact] public void Bind()
     {
-        var res = Result.Ok<int, Exception>(5);
-        var a = res.Bind(i => Result.Ok<int, Exception>(i * 2));
+        var res = Result.Ok<int, Error>(5);
+        var a = res.Bind(i => Result.Ok<int, Error>(i * 2));
 
         Assert.True(a.Success);
         Assert.Equal(10, a.Value);
     }
     [Fact] public void Bind_Fail()
     {
-        var exception = new Exception("fail");
-        var res = Result.Fail<int, Exception>(exception);
-        var a = res.Bind(i => Result.Ok<int, Exception>(i * 2));
+        var exception = new Error("fail");
+        var res = Result.Fail<int, Error>(exception);
+        var a = res.Bind(i => Result.Ok<int, Error>(i * 2));
 
         Assert.False(a.Success);
-        Assert.Equal(exception, a.Exception);
+        Assert.Equal(exception, a.Error);
     }
     [Fact] public void Bind_OnFail()
     {
-        var exception = new Exception("fail");
+        var exception = new Error("fail");
         var expected = 0;
-        var res = Result.Fail<int, Exception>(exception);
+        var res = Result.Fail<int, Error>(exception);
 
-        var a = res.Bind(i => Result.Ok<int, Exception>(i * 2), e => Result.Ok<int, Exception>(expected));
+        var a = res.Bind(i => Result.Ok<int, Error>(i * 2), e => Result.Ok<int, Error>(expected));
 
         Assert.True(a.Success);
         Assert.Equal(expected, a.Value);
     }
     [Fact] public void Bind_Result()
     {
-        var success = Result.Ok<int, Exception>(5);
-        var failure = Result.Fail<int, Exception>(new Exception("fail"));
-        static Result<Exception> onSuccess(int _) => Result.Ok<Exception>();
+        var success = Result.Ok<int, Error>(5);
+        var failure = Result.Fail<int, Error>(new Error("fail"));
+        static Result<Error> onSuccess(int _) => Result.Ok<Error>();
 
+        var expectedError = new Error("wrapper");
         var s = success.Bind(onSuccess);
-        var f = failure.Bind(onSuccess, e => Result.Fail(new Exception ("wrapper", failure.Exception)));
+        var f = failure.Bind(onSuccess, e => expectedError);
 
         Assert.True(s.Success);
         Assert.False(f.Success);
-        Assert.Equal(failure.Exception, f.Exception.InnerException);
+        Assert.Equal(expectedError, f.Error);
     }
 
     [Fact] public void Map()
     {
-        var res = Result.Ok<int, Exception>(5);
+        var res = Result.Ok<int, Error>(5);
         var a = res.Map(i => i * 2);
 
         Assert.True(a.Success);
@@ -69,18 +70,18 @@ public class ResultTFunctionalityTest
     }
     [Fact] public void Map_Fail()
     {
-        var exception = new Exception("fail");
-        var res = Result.Fail<int, Exception>(exception);
+        var exception = new Error("fail");
+        var res = Result.Fail<int, Error>(exception);
         var a = res.Map(i => i);
 
         Assert.False(a.Success);
-        Assert.Equal(exception, a.Exception);
+        Assert.Equal(exception, a.Error);
     }
     [Fact] public void Map_OnFail()
     {
-        var exception = new Exception("fail");
+        var exception = new Error("fail");
         var expected = 0;
-        var res = Result.Fail<int, Exception>(exception);
+        var res = Result.Fail<int, Error>(exception);
         var a = res.Map(i => i, e => expected);
 
         Assert.True(a.Success);
@@ -89,7 +90,7 @@ public class ResultTFunctionalityTest
 
     [Fact] public void Match()
     {
-        var res = Result.Ok<int, Exception>(5);
+        var res = Result.Ok<int, Error>(5);
         var expected = 10;
         var a = res.Match(i => i * 2, e => 0);
 
@@ -97,8 +98,8 @@ public class ResultTFunctionalityTest
     }
     [Fact] public void Match_OnFail()
     {
-        var exception = new Exception("fail");
-        var res = Result.Fail<int, Exception>(exception);
+        var exception = new Error("fail");
+        var res = Result.Fail<int, Error>(exception);
         var expected = 0;
         var a = res.Match(i => i * 2, e => expected);
 
@@ -107,7 +108,7 @@ public class ResultTFunctionalityTest
 
     [Fact] public void ValueOr()
     {
-        var res = Result.Ok<int, Exception>(5);
+        var res = Result.Ok<int, Error>(5);
         var a = res.ValueOr(10);
         var b = res.ValueOr(() => 10);
         var c = res.ValueOr(e => 10);
@@ -118,7 +119,7 @@ public class ResultTFunctionalityTest
     }
     [Fact] public void ValueOr_Default()
     {
-        var res = Result.Fail<int, Exception>(new Exception("fail"));
+        var res = Result.Fail<int, Error>(new Error("fail"));
         var a = res.ValueOr(10);
         var b = res.ValueOr(() => 10);
         var c = res.ValueOr(e => 10);
@@ -130,8 +131,8 @@ public class ResultTFunctionalityTest
 
     [Fact] public void ToNullable()
     {
-        var successClass = Result.Ok<string, Exception>(nameof(Result));
-        var failureClass = Result.Fail<string, Exception>(new Exception("fail"));
+        var successClass = Result.Ok<string, Error>(nameof(Result));
+        var failureClass = Result.Fail<string, Error>(new Error("fail"));
 
         var sc = successClass.ToNullable();
         var fc = failureClass.ToNullable();
@@ -141,8 +142,8 @@ public class ResultTFunctionalityTest
     }
     [Fact] public void ToNullable_Struct()
     {
-        var success = Result.Ok<int, Exception>(10);
-        var failure = Result.Fail<int, Exception>(new Exception("fail"));
+        var success = Result.Ok<int, Error>(10);
+        var failure = Result.Fail<int, Error>(new Error("fail"));
 
         var s = success.ToNullable();
         var f = failure.ToNullable();
@@ -154,9 +155,9 @@ public class ResultTFunctionalityTest
 
     [Fact] public void Deconstruct()
     {
-        (string s, Exception fe) expected = ("success", new Exception("fail"));
-        var sr = Result.Ok<string, Exception>(expected.s);
-        var fr = Result.Fail<string, Exception>(expected.fe);
+        (string s, Error fe) expected = ("success", new Error("fail"));
+        var sr = Result.Ok<string, Error>(expected.s);
+        var fr = Result.Fail<string, Error>(expected.fe);
 
         var (s, se) = sr;
         var (f, fe) = fr;
@@ -168,9 +169,9 @@ public class ResultTFunctionalityTest
     }
     [Fact] public void Deconstruct_Struct()
     {
-        (int s, Exception fe) expected = (10, new Exception("fail"));
-        var sr = Result.Ok<int, Exception>(expected.s);
-        var fr = Result.Fail<int, Exception>(expected.fe);
+        (int s, Error fe) expected = (10, new Error("fail"));
+        var sr = Result.Ok<int, Error>(expected.s);
+        var fr = Result.Fail<int, Error>(expected.fe);
 
         var (s, se) = sr;
         var (f, fe) = fr;

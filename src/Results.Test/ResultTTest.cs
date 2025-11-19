@@ -6,15 +6,15 @@ public class ResultTTest
 {
     [Fact] public void Success_EmptyCtorWithStruct()
     {
-        var r = new Result<int, Exception>();
+        var r = new Result<int, Error>();
         Assert.True(r.Success);
-        Assert.Throws<SuccessfulResultException>(() => r.Exception);
+        Assert.Throws<SuccessfulResultException>(() => r.Error);
     }
 
     [Fact] public void Success_ConvertedFromValue()
     {
         var v = 1;
-        Result<int, Exception> r = v;
+        Result<int, Error> r = v;
         Assert.True(r.Success);
         Assert.Equal(v, r.Value);
     }
@@ -22,54 +22,52 @@ public class ResultTTest
     [Fact] public void Success_GetException()
     {
         var v = 1;
-        Result<int, Exception> r = v;
+        Result<int, Error> r = v;
         Assert.True(r.Success);
-        Assert.Throws<SuccessfulResultException>(() => r.Exception);
+        Assert.Throws<SuccessfulResultException>(() => r.Error);
     }
 
     [Fact] public void Success_ConvertToTypelessResult()
     {
-        Result<int, Exception> tr = 1;
-        Result<Exception> r = tr;
+        Result<int, Error> tr = 1;
+        Result<Error> r = tr;
         Assert.True(r.Success);
     }
 
     [Fact] public void Failure_EmptyCtorWithClass()
     {
-        var r = new Result<string, Exception>();
+        var r = new Result<string, Error>();
         Assert.False(r.Success);
-        Assert.Throws<InvalidConditionResultException>(() => r.Exception);
+        Assert.Throws<InvalidConditionResultException>(() => r.Error);
     }
 
     [Fact] public void Failure_ConvertedFromException()
     {
-        var e = new Exception();
-        Result<int, Exception> r = e;
+        var e = new Error();
+        Result<int, Error> r = e;
         Assert.False(r.Success);
-        Assert.Equal(e, r.Exception);
+        Assert.Equal(e, r.Error);
     }
 
     [Fact] public void Failure_GetValue()
     {
-        var e = new Exception();
-        Result<int, Exception> r = e;
+        Result<int, Error> r = new Error();
         Assert.False(r.Success);
-        var te = Assert.Throws<Exception>(() => r.Value);
-        Assert.Equal(e, te);
+        Assert.Throws<FailureResultException>(() => r.Value);
     }
 
     [Fact] public void Failure_ConvertToTypelessResult()
     {
-        var e = new Exception();
-        Result<int, Exception> tr = e;
-        Result<Exception> r = tr;
+        var e = new Error();
+        Result<int, Error> tr = e;
+        Result<Error> r = tr;
         Assert.False(r.Success);
-        Assert.Equal(e, r.Exception);
+        Assert.Equal(e, r.Error);
     }
 
     [Fact] public void ThrowException_ConvertedFromNull()
     {
         Assert.Throws<InvalidConditionResultException>(
-            () => (Result<string, Exception>)default(string)!);
+            () => (Result<string, Error>)default(string)!);
     }
 }

@@ -1,7 +1,7 @@
 namespace Results;
 
-public interface IResult<E> where E : Exception
+public interface IResult<E> where E : Error
 {
     bool Success { get; }
-    E Exception { get; }
+    E Error { get; }
 }
