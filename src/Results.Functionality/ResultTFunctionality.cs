@@ -9,21 +9,20 @@ public static class ResultTFunctionality
         return res;
     }
 
-    public static Result<R, E> Bind<T, E, R>(this Result<T, E> res, Func<T, Result<R, E>> onSuccess, Func<E, Result<R, E>>? onFail = null) where E : Exception
-        => res.Success ? onSuccess(res.Value) : (onFail?.Invoke(res.Exception) ?? res.Exception);
-    public static Result<E> Bind<T, E>(this Result<T, E> res, Func<T, Result<E>> onSuccess, Func<E, Result<E>>? onFail = null) where E : Exception
-        => res.Success ? onSuccess(res.Value) : (onFail?.Invoke(res.Exception) ?? res.Exception);
+    public static Result<OT, E> Bind<T, E, OT>(this Result<T, E> res, Func<T, Result<OT, E>> onSuccess) where E : Exception
+        => res.Success ? onSuccess(res.Value) : res.Exception;
+    public static Result<OT, OE> Bind<T, E, OT, OE>(this Result<T, E> res, Func<T, Result<OT, OE>> onSuccess, Func<E, Result<OT, OE>> onFail) where E : Exception where OE : Exception
+        => res.Success ? onSuccess(res.Value) : onFail(res.Exception);
 
-    public static Result<R, E> Map<T, E, R>(this Result<T, E> res, Func<T, R> onSuccess, Func<E, R>? onFail = null) where E : Exception
+    public static Result<E> Bind<T, E>(this Result<T, E> res, Func<T, Result<E>> onSuccess) where E : Exception
+        => res.Success ? onSuccess(res.Value) : res.Exception;
+    public static Result<OE> Bind<T, E, OE>(this Result<T, E> res, Func<T, Result<OE>> onSuccess, Func<E, Result<OE>> onFail) where E : Exception where OE: Exception
+        => res.Success ? onSuccess(res.Value) : onFail(res.Exception);
+
+    public static Result<OT, E> Map<T, E, OT>(this Result<T, E> res, Func<T, OT> onSuccess, Func<E, OT>? onFail = null) where E : Exception
         => res.Success ? onSuccess(res.Value) : (onFail is { } ? onFail(res.Exception) : res.Exception);
-    public static Result<E> Map<T, E>(this Result<T, E> res, Action<T> onSuccess, Action<E>? onFail = null) where E : Exception
-    {
-        if (res.Success) { onSuccess(res.Value); return Result.Ok<E>(); }
-        else if (onFail is { }) { onFail(res.Exception); return Result.Ok<E>(); }
-        return res.Exception;
-    }
 
-    public static R Match<T, E, R>(this Result<T, E> res, Func<T, R> onSuccess, Func<E, R> onFail) where E : Exception
+    public static OT Match<T, E, OT>(this Result<T, E> res, Func<T, OT> onSuccess, Func<E, OT> onFail) where E : Exception
         => res.Success ? onSuccess(res.Value) : onFail(res.Exception);
 }
 

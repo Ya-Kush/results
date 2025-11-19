@@ -86,20 +86,6 @@ public class ResultTFunctionalityTest
         Assert.True(a.Success);
         Assert.Equal(expected, a.Value);
     }
-    [Fact] public void Map_Result()
-    {
-        var success = Result.Ok<int, Exception>(5);
-        var failure = Result.Fail<int, Exception>(new Exception("fail"));
-        static void onSuccess(int _) { }
-        Exception? ex = null;
-
-        var s = success.Map(onSuccess);
-        var f = failure.Map(onSuccess, e => ex = e);
-
-        Assert.True(s.Success);
-        Assert.True(f.Success);
-        Assert.Equal(failure.Exception, ex);
-    }
 
     [Fact] public void Match()
     {

@@ -61,34 +61,6 @@ public class ResultFunctionalityTest
         Assert.Equal(ex, ft.Exception);
     }
 
-    [Fact] public void Map()
-    {
-        var res = Result.Ok<Exception>();
-        var invoked = false;
-        var a = res.Map(() => invoked = true);
-
-        Assert.True(invoked);
-    }
-    [Fact] public void Map_Fail()
-    {
-        var res = Result.Fail<Exception>(new());
-        var invoked = false;
-        var a = res.Map(() => invoked = true);
-
-        Assert.False(invoked);
-        Assert.False(a.Success);
-        Assert.Equal(res, a);
-    }
-    [Fact] public void Map_OnFail()
-    {
-        var res = Result.Fail<Exception>(new());
-        var ex = new Exception("fail");
-        var exA = default(Exception);
-        var a = res.Map(() => { }, _ => { exA = ex; });
-
-        Assert.True(a.Success);
-        Assert.Equal(ex, exA);
-    }
     [Fact] public void Map_ResultT()
     {
         var ex = new Exception("fail");
