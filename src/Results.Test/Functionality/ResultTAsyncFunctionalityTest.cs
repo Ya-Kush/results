@@ -5,8 +5,8 @@ public class ResultTAsyncFunctionalityTest
     [Fact] public async Task PeekAsync()
     {
         (int val, TestError err) expected = (1, new("fail"));
-        var s = Result.Ok<int, TestError>(expected.val);
-        var f = Result.Fail(expected.err);
+        var s = Result<int, TestError>.Ok(expected.val);
+        var f = Result<TestError>.Fail(expected.err);
 
         (int val, TestError err) actual = default;
         var actualS = await s.Async().PeekAsync(async i => actual.val = i);
@@ -19,9 +19,9 @@ public class ResultTAsyncFunctionalityTest
 
     [Fact] public async Task BindAsync()
     {
-        var exp = Result.Ok<int, TestError>(1);
-        var res = await Result
-            .Ok<int, TestError>(0).Async()
+        var exp = Result<int, TestError>.Ok(1);
+        var res = await Result<int, TestError>
+            .Ok(0).Async()
             .BindAsync(async _ => exp);
 
         Assert.True(res.Success);
@@ -29,9 +29,9 @@ public class ResultTAsyncFunctionalityTest
     }
     [Fact] public async Task BindAsync_Fail()
     {
-        var exp = Result.Ok<int, TestError>(1);
-        var res = await Result
-            .Fail<int, TestError>(new()).Async()
+        var exp = Result<int, TestError>.Ok(1);
+        var res = await Result<int, TestError>
+            .Fail(new()).Async()
             .BindAsync(async _ => exp);
 
         Assert.False(res.Success);
@@ -39,9 +39,9 @@ public class ResultTAsyncFunctionalityTest
     }
     [Fact] public async Task BindAsync_OnFail()
     {
-        var exp = Result.Ok<int, TestError>(69);
-        var res = await Result
-            .Fail<int, TestError>(new("i'm fine")).Async()
+        var exp = Result<int, TestError>.Ok(69);
+        var res = await Result<int, TestError>
+            .Fail(new("i'm fine")).Async()
             .BindAsync(
                 async _ => 1,
                 async _ => exp);
@@ -51,10 +51,10 @@ public class ResultTAsyncFunctionalityTest
     }
     [Fact] public async Task BindAsync_Result()
     {
-        var succ = Result.Ok<TestError>();
-        var fail = Result.Fail<TestError>(new("actually i'm fine"));
-        var st = Result.Ok<int, TestError>(0);
-        var ft = Result.Fail<int, TestError>(new());
+        var succ = Result<TestError>.Ok();
+        var fail = Result<TestError>.Fail(new("actually i'm fine"));
+        var st = Result<int, TestError>.Ok(0);
+        var ft = Result<int, TestError>.Fail(new());
         async ValueTask<Result<TestError>> onSuccess(int _) => succ;
         async ValueTask<Result<TestError>> onFail(TestError _) => fail;
 
@@ -69,8 +69,8 @@ public class ResultTAsyncFunctionalityTest
 
     [Fact] public async Task MapAsync_ResultT()
     {
-        var st = Result.Ok<int, TestError>(0);
-        var ft = Result.Fail<int, TestError>(new());
+        var st = Result<int, TestError>.Ok(0);
+        var ft = Result<int, TestError>.Fail(new());
         async ValueTask<int> onSuccess(int _) => 1;
         async ValueTask<int> onFail(TestError _) => 0;
 
@@ -88,8 +88,8 @@ public class ResultTAsyncFunctionalityTest
         async ValueTask<int> onSuccess(int i) => 1;
         async ValueTask<int> onFail(TestError e) => 0;
 
-        var s = await Result.Ok<int, TestError>(7777777).Async().MatchAsync(onSuccess, onFail);
-        var f = await Result.Fail<int, TestError>(new()).Async().MatchAsync(onSuccess, onFail);
+        var s = await Result<int, TestError>.Ok(7777777).Async().MatchAsync(onSuccess, onFail);
+        var f = await Result<int, TestError>.Fail(new()).Async().MatchAsync(onSuccess, onFail);
 
         Assert.Equal(1, s);
         Assert.Equal(0, f);

@@ -2,7 +2,7 @@ using Results.Exceptions;
 
 namespace Results;
 
-public readonly record struct Result<T, E> : IResult<E> where E : Error
+public readonly partial record struct Result<T, E> : IResult<E> where E : Error
 {
     readonly E? _err;
     readonly T? _val;
