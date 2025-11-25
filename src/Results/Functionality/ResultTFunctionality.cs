@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace Results;
 
 public partial record struct Result<T, E>
@@ -9,8 +11,10 @@ public partial record struct Result<T, E>
         return this;
     }
 
+    [OverloadResolutionPriority(1)]
     public Result<OT, E> Bind<OT>(Func<T, Result<OT, E>> onSuccess)
         => Success ? onSuccess(Value) : Error;
+    [OverloadResolutionPriority(1)]
     public Result<OT, OE> Bind<OT, OE>(Func<T, Result<OT, OE>> onSuccess, Func<E, Result<OT, OE>> onFail) where OE : Error
         => Success ? onSuccess(Value) : onFail(Error);
 
